@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Método de Newton-Raphson</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form input, form button, form label {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            height: 150px;
+            margin-top: 10px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .result, .log {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+        /* Container para o gráfico */
+        .plot-container {
+            margin-top: 15px;
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+        }
+        /* Ajustes para a imagem do gráfico */
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Método de Newton-Raphson</h1>
+        <form method="POST">
+            <label for="equation">Equação f(x):</label>
+            <input type="text" id="equation" name="equation" placeholder="Ex: x**2 - 2" required>
+
+            <label for="x0">Chute Inicial (x0):</label>
+            <input type="number" step="any" id="x0" name="x0" placeholder="Ex: 1.0" required>
+
+            <label for="tol">Tolerância:</label>
+            <input type="number" step="any" id="tol" name="tol" placeholder="Ex: 1e-6" required>
+
+            <label for="max_iter">Máximo de Iterações:</label>
+            <input type="number" id="max_iter" name="max_iter" placeholder="Ex: 100" required>
+
+            <label for="verbose">
+                <input type="checkbox" id="verbose" name="verbose"> Exibir detalhes das iterações
+            </label>
+
+            <button type="submit">Calcular</button>
+        </form>
+
+        {% if result %}
+        <div class="result">
+            <strong>Resultado:</strong>
+            <p>{{ result }}</p>
+        </div>
+        {% endif %}
+
+        {% if log %}
+        <div class="log">
+            <strong>Detalhes das Iterações:</strong>
+            <textarea readonly>{{ log }}</textarea>
+        </div>
+        {% endif %}
+
+        {% if plot_url %}
+        <div class="plot-container">
+            <h3>Gráfico de Convergência</h3>
+            <img src="data:image/png;base64,{{ plot_url }}" alt="Gráfico de Erro">
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

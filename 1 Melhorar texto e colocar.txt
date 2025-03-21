@@ -1,0 +1,4 @@
+1. Melhorar texto e colocar mais matemática.
+2. Explicitar mais os métodos.
+3. Gráficos.
+4. Explicação dos resultados e tirar o método 0, deixar o 1 e 2.
