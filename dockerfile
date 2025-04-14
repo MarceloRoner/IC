@@ -22,5 +22,5 @@
     EXPOSE 8000
     
     # ----- comando de start -----
-    CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:${PORT}"]
+    CMD bash -c "gunicorn app:app --bind 0.0.0.0:${PORT:-8000}"
     
