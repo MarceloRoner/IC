@@ -1,7 +1,25 @@
-__pycache__/
-*.pyc
+# Ambientes virtuais
 .venv/
+env/
+__pycache__/
+
+# Arquivos temporários / cache Python
+*.pyc
+*.pyo
+*.pyd
+
+# Arquivos que você não quer versionar
 *.pdf
-*.jpeg
 *.jpg
+*.jpeg
+*.png
+
+# IDEs e editores
+.vscode/
+.idea/
+
+# Arquivos específicos
+gerar_jpeg.py
+index_one.py
+index_two.py
 
