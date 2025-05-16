@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Método de Newton-Raphson</title>
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    :root {
+      --bg: #1e1e1e;
+      --text: #f0f0f0;
+      --card-bg: #2b2b2b;
+      --primary: #00ccff;
+      --accent: #ffcc00;
+      --error: #e74c3c;
+      --border-radius: 8px;
+      --transition: 0.3s ease;
+    }
+    [data-theme="light"] {
+      --bg: #fafafa;
+      --text: #333;
+      --card-bg: #fff;
+      --primary: #0066cc;
+      --accent: #cc9900;
+      --error: #c0392b;
+    }
+    * { box-sizing: border-box; transition: var(--transition); }
+    body { margin:0; font-family:'Roboto',sans-serif; background:var(--bg); color:var(--text); display:flex; flex-direction:column; min-height:100vh; }
+    header { padding:1rem 2rem; background:var(--card-bg); display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 4px rgba(0,0,0,0.5); }
+    header h1 { margin:0; font-weight:700; font-size:1.5rem; }
+    #theme-toggle { background:none; border:2px solid var(--primary); color:var(--primary); padding:0.4rem 0.8rem; border-radius:var(--border-radius); cursor:pointer; }
+    main {
+      flex: 1;
+      width: 100%; /* ocupa toda largura */
+      margin: 2rem 0; /* ajustado para remover limite de largura */
+      padding: 0 2rem; /* espaço lateral maior */
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .card { background:var(--card-bg); padding:1.5rem; border-radius:var(--border-radius); box-shadow:0 2px 8px rgba(0,0,0,0.5); }
+    .card h2 { margin-top:0; color:var(--accent); }
+    .inputs { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; }
+    .inputs label { display:flex; flex-direction:column; font-weight:500; }
+    .inputs input { margin-top:0.3rem; padding:0.5rem; border:1px solid #555; border-radius:var(--border-radius); background:var(--bg); color:var(--text); }
+    .exemplos { display:flex; gap:0.5rem; flex-wrap:wrap; }
+    .exemplos button { background:var(--primary); color:var(--bg); border:none; padding:0.5rem 1rem; border-radius:var(--border-radius); cursor:pointer; }
+    .exemplos button:hover { background:var(--accent); }
+    #execute-btn { margin-top:1rem; width:100%; padding:0.75rem; font-size:1rem; font-weight:700; background:var(--accent); color:var(--bg); border:none; border-radius:var(--border-radius); cursor:pointer; }
+    #execute-btn:hover { background:var(--primary); }
+    #erroMsg { color:var(--error); font-weight:500; margin-top:0.5rem; }
+    pre, textarea { background:var(--bg); border:1px solid #555; border-radius:var(--border-radius); padding:1rem; overflow-x:auto; }
+    #graficos > div { margin-top:1rem; border-radius:var(--border-radius); background:var(--bg); padding:0.5rem; }
+    footer { text-align:center; padding:1rem; background:var(--card-bg); font-size:0.9rem; }
+  </style>
+</head>
+<body data-theme="dark">
+  <header>
+    <h1>Newton-Raphson</h1>
+    <button id="theme-toggle" onclick="toggleTheme()">Light Mode</button>
+  </header>
+  <main>
+    <section class="card">
+      <h2>Configurações</h2>
+      <p>Use a fórmula: <strong style="color:var(--primary)">xₙ₊₁ = xₙ - f(xₙ) / f'(xₙ)</strong></p>
+      <div class="exemplos">
+        <button onclick="setExample('sin(x) - x/2')">sin(x) - x/2</button>
+        <button onclick="setExample('x^3 - x - 2')">x³ - x - 2</button>
+        <button onclick="setExample('exp(x) - 3')">exp(x) - 3</button>
+        <button onclick="setExample('log(x) - 1')">log(x) - 1</button>
+      </div>
+      <div class="inputs">
+        <label>f(x):<input id="fx" value="x^3 - 3" /></label>
+        <label>x₀:<input id="x0" value="1.5" type="number" /></label>
+        <label>ε (tolerância):<input id="tol" value="0.000001" type="number" step="any" /></label>
+        <label>Máx iterações:<input id="maxIter" value="50" type="number" /></label>
+      </div>
+      <button id="execute-btn" onclick="executar()">Calcular</button>
+      <div id="erroMsg"></div>
+    </section>
+    <section class="card">
+      <h2>Resultado</h2>
+      <pre id="resultado">--</pre>
+    </section>
+    <section class="card">
+      <h2>Log de Iterações</h2>
+      <textarea id="log" readonly>--</textarea>
+    </section>
+    <section class="card" id="graficos">
+      <h2>Gráficos</h2>
+      <div id="grafico_fx" style="height:300px;"></div>
+      <div id="grafico_aprox" style="height:300px;"></div>
+      <div id="grafico_fxn" style="height:300px;"></div>
+      <div id="grafico_erro" style="height:300px;"></div>
+    </section>
+  </main>
+  <footer>© 2025 - UFG IC</footer>
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const next = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      body.setAttribute('data-theme', next);
+      document.getElementById('theme-toggle').textContent = next === 'dark' ? 'Light Mode' : 'Dark Mode';
+    }
+    function setExample(expr) { document.getElementById('fx').value = expr; }
+    function derivada(f, x, h = 1e-6) { return (f(x + h) - f(x - h)) / (2 * h); }
+    function newton(f_expr, x0, tol = 1e-6, maxIter = 100) {
+      const f = math.compile(f_expr);
+      let x = parseFloat(x0), log = [], aprox = [x];
+      for (let i = 0; i < maxIter; i++) {
+        const fx = f.evaluate({ x }), dfx = derivada(x => f.evaluate({ x }), x);
+        if (Math.abs(dfx) < 1e-12) { log.push(`⚠️ Derivada ≈ 0 em x=${x}`); break; }
+        let x1 = x - fx / dfx;
+        log.push(`Iter ${i+1}: x=${x.toFixed(6)}, f(x)=${fx.toFixed(6)}, f'(x)=${dfx.toFixed(6)} → xₙ₊₁=${x1.toFixed(6)}`);
+        if (Math.abs(x1 - x) < tol) { aprox.push(x1); log.push(`✅ Convergiu em ${i+1} iterações: raiz≈${x1.toFixed(6)}`); return { raiz: x1, log, aprox }; }
+        x = x1; aprox.push(x);
+      }
+      log.push(`❌ Não convergiu em ${maxIter} iterações`);
+      return { raiz: x, log, aprox };
+    }
+    function executar() {
+      const fxInput = document.getElementById('fx').value.trim();
+      const x0 = parseFloat(document.getElementById('x0').value);
+      const tol = parseFloat(document.getElementById('tol').value);
+      const maxIter = parseInt(document.getElementById('maxIter').value, 10);
+      const erroMsg = document.getElementById('erroMsg'); erroMsg.textContent = '';
+      if (!fxInput || isNaN(x0) || isNaN(tol) || isNaN(maxIter)) { erroMsg.textContent = '⚠️ Preencha corretamente todos os campos.'; return; }
+      let expr = fxInput.replace(/²/g, '^2').replace(/³/g, '^3').replace(/⁴/g, '^4').replace(/⁵/g, '^5').replace(/\s+/g, '');
+      let f;
+      try { f = math.compile(expr); f.evaluate({ x: x0 }); } catch (e) { erroMsg.textContent = '⚠️ Expressão inválida. Ex: sin(x), log(x), x^2'; return; }
+      const { raiz, log, aprox } = newton(expr, x0, tol, maxIter);
+      document.getElementById('resultado').textContent = `Raiz: ${raiz}`;
+      document.getElementById('log').value = log.join('\n');
+      const y_fxn = aprox.map(x => f.evaluate({ x }));
+      const erros = aprox.slice(1).map((x,i) => Math.abs(x - aprox[i]));
+      const x_vals = math.range(x0 - 5, x0 + 5, 0.1).toArray();
+      const y_vals = x_vals.map(x => f.evaluate({ x }));
+      Plotly.newPlot('grafico_fx', [{ x: x_vals, y: y_vals, mode: 'lines' }], { title: 'f(x)', margin: { t:40, l:40 } });
+      Plotly.newPlot('grafico_aprox', [{ x: [...aprox.keys()], y: aprox, mode: 'lines+markers' }], { title: 'Aproximações xₙ', margin: { t:40, l:40 } });
+      Plotly.newPlot('grafico_fxn', [{ x: [...y_fxn.keys()], y: y_fxn, mode: 'lines+markers' }], { title: 'f(xₙ)', margin: { t:40, l:40 } });
+      Plotly.newPlot('grafico_erro', [{ x: [...erros.keys()], y: erros, mode: 'lines+markers' }], { title: 'Erro absoluto |xₙ₊₁ - xₙ|', yaxis: { type: 'log' }, margin: { t:40, l:40 } });
+    }
+  </script>
+</body>
+</html>
