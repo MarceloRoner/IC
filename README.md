@@ -65,10 +65,6 @@ Trabalhamos com uma implementação didática do método de Newton, unindo **int
 
 ---
 
-## 📄 Licença
-
-Distribuído sob a licença MIT. Veja o arquivo `LICENSE` para mais informações.
-
 ---
 
 ## 🙋‍♂️ Autor
